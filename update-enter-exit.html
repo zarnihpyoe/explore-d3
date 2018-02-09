@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .chart rect {
+      fill: steelblue;
+    }
+  </style>
+</head>
+<body>
+  <svg class="chart"></svg>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+  <script>
+    const data = [10, 20, 30, 40, 50, 60, 70, 70, 90, 100]
+    const chart = { width: 500, height: 500 }
+
+    const barWidth = 50
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data)])
+      .range([0, chart.height])
+
+
+    const g = d3.select('.chart')
+        .attr('width', chart.width)
+        .attr('height', chart.height)
+      .append('g')
+
+
+    // initial display
+    update(data)
+    // take random sample from 'data' and display
+    d3.interval(() => {
+      const rdata = d3.shuffle(data).slice(0, Math.floor(Math.random()*10))
+      update(rdata)
+    }, 1500)
+    function update(data) {
+      // join new data with old elements, if any
+      const bar = g.selectAll('rect')
+        .data(data)
+      
+      // UPDATE
+      // update old elements with new data
+      bar.attr('y', d => chart.height - yScale(d))
+        .attr('height', d => yScale(d))
+      
+      // ENTER
+      bar.enter().append('rect')
+          .attr('x', (d, i) => i*barWidth)
+          .attr('y', d => chart.height - yScale(d))
+          .attr('width', barWidth -1)
+          .attr('height', d => yScale(d))
+        // .merge(bar)
+      
+      // exit
+      bar.exit().remove()
+    }
+    
+  </script>
+</body>
+</html>

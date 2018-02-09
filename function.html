@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      display: grid;
+      grid-template-areas: "left right";
+      grid-template-columns: 1fr 1fr;
+    }
+    .left {
+      grid-area: left;
+    }
+    .right {
+      grid-area: right;
+    }
+
+    /* svg specific */
+    /* removing axis outer path; we only work with ticks as grids */
+    .grid path {
+      opacity: 0.1;
+    }
+    /* reducing opacity of grid lines */
+    .grid .tick line {
+      opacity: 0.1;
+    }
+
+    /* axis */
+    .axis path {
+      stroke: #000;
+      opacity: 0.2;
+    }
+
+    /* graph */
+    .fn {
+      stroke: steelblue;
+      fill: none;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <svg id="left" width="500" height="500"></svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+  <script>
+    // default dimension of svg
+    const dimen = { width: 500, height: 500 }
+    const range = {
+      x: { lo: -5, hi: 5 },
+      y: { lo: -5, hi: 5 },
+    }
+
+    const xScale = d3.scaleLinear()
+      .domain([range.x.lo , range.x.hi])
+      .range([0, dimen.width])
+    const yScale = d3.scaleLinear()
+      .domain([range.y.lo , range.y.hi])
+      .range([dimen.height, 0])
+
+    const xAxis = d3.axisBottom(xScale)
+      .tickSize(-dimen.height)
+      .tickPadding(6)
+    const yAxis = d3.axisLeft(yScale)
+      .tickSize(-dimen.width)
+      .tickPadding(6)
+
+    const line = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
+
+    const canvas = d3.select('svg')
+        .attr('width', dimen.width + 56*2)
+        .attr('height', dimen.height + 56*2)
+      .append('g')
+        .attr('id', 'canvas')
+        .attr('transform', `translate(56, 56)`)
+
+    // Draw Grid
+    // =========
+    const grid = canvas.append('g')
+        .attr('class', 'grid')
+    // add vertical-grid
+    grid.append('g')
+        .attr('transform', `translate(0, ${dimen.height})`)
+        .call(xAxis)
+    // add horizontal-grid
+    grid.append('g')
+        .call(yAxis)
+    
+    // Draw Axis
+    // =========
+    const x_axis = [
+      { x: xScale.domain()[0], y: 0 },
+      { x: xScale.domain()[1], y: 0 },
+    ]
+    const y_axis = [
+      { x: 0, y: yScale.domain()[0] },
+      { x: 0, y: yScale.domain()[1] },
+    ]
+    const axis = canvas.append('g')
+        .attr('class', 'axis')
+      .selectAll('path')
+        .data([x_axis, y_axis])
+      .enter().append('path')
+        .attr('d', line)
+    
+    // Draw Function
+    // =============
+    const data = []
+    for(let i=0; i<=1000; i++) {
+      const x = range.x.lo + i*((range.x.hi - range.x.lo)/1000)
+      data.push({
+        x: x,
+        y: Math.tan(x)
+      })
+    }
+    trimmedData = data.filter(d => range.y.lo <= d.y && d.y <= range.y.hi)
+    canvas.append('g')
+        .attr('class', 'fn')
+      .append('path')
+        .datum(trimmedData)
+        .attr('d', line)
+
+
+  </script>
+</body>
+</html>
